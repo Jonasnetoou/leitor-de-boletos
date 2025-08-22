@@ -74,7 +74,7 @@
   <div id="listaBoletos"></div>
 
   <!-- Scanner -->
-  <div id="interactive" style="max-width:500px;margin:auto;"></div>
+  <video id="interactive" autoplay playsinline style="max-width:500px;margin:auto;display:block;"></video>
 
   <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
   <script>
@@ -193,18 +193,25 @@
       Quagga.init({
         inputStream: {
           type: "LiveStream",
+          target: document.querySelector('#interactive'),
           constraints: { facingMode: "environment" }
         },
         decoder: { readers: ["code_128_reader","i2of5_reader"] }
       }, function(err) {
-        if (err) { console.error(err); return; }
+        if (err) {
+          console.error("Erro ao iniciar scanner:", err);
+          alert("Erro ao iniciar câmera: " + err.message);
+          return;
+        }
         Quagga.start();
       });
+
       Quagga.onDetected(function(data) {
         registrarBoleto(data.codeResult.code);
         stopScanner();
       });
     }
+
     function stopScanner() { Quagga.stop(); }
 
     renderBoletos();
