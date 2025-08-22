@@ -2,14 +2,45 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Teste Câmera</title>
+  <title>Controle de Boletos</title>
   <style>
     body {
       background: #121212;
       color: #fff;
       font-family: Arial, sans-serif;
       padding: 20px;
-      text-align: center;
+    }
+    h1 { text-align: center; }
+    .top-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    input, select, button {
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+    }
+    input { flex: 1; }
+    button {
+      cursor: pointer;
+      background: #1976d2;
+      color: #fff;
+    }
+    .boleto {
+      background: #1e1e1e;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+    .pago { opacity: 0.6; text-decoration: line-through; }
+    #dashboard {
+      background: #1e1e1e;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 15px 0;
     }
     video {
       max-width: 500px;
@@ -18,26 +49,153 @@
       border: 2px solid #1976d2;
       border-radius: 8px;
     }
-    button {
-      margin: 15px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      background: #1976d2;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
-  <h1>Teste da Câmera</h1>
-  <p>Clique no botão abaixo para abrir a câmera.</p>
+  <h1>Controle de Boletos</h1>
 
-  <button onclick="abrirCamera()">📷 Abrir câmera</button>
-  <video id="preview" autoplay playsinline></video>
+  <!-- Entrada manual / leitor -->
+  <div class="top-bar">
+    <input type="text" id="codigoBarras" placeholder="Passe o boleto no leitor ou digite">
+    <button onclick="registrarBoleto()">Salvar</button>
+    <button onclick="abrirCamera()">📷 Abrir câmera</button>
+    <button onclick="stopScanner()">⏹ Parar</button>
+  </div>
 
+  <!-- Filtros -->
+  <div class="top-bar">
+    <input type="text" id="search" placeholder="Buscar código ou valor" oninput="renderBoletos()">
+    <select id="filtro" onchange="renderBoletos()">
+      <option value="todos">Todos</option>
+      <option value="abertos">Em aberto</option>
+      <option value="pagos">Pagos</option>
+      <option value="vencidos">Vencidos</option>
+    </select>
+    <button onclick="exportarCSV()">⬇️ Exportar CSV</button>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard"></div>
+
+  <!-- Lista de boletos -->
+  <div id="listaBoletos"></div>
+
+  <!-- Scanner -->
+  <video id="interactive" autoplay playsinline></video>
+
+  <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
   <script>
+    // Funções principais
+    function parseBoleto(codigo) {
+      let fatorVencimento = parseInt(codigo.substring(33, 37));
+      let baseDate = new Date(1997, 9, 7);
+      let vencimento = new Date(baseDate.getTime() + (fatorVencimento * 86400000));
+      let valor = parseFloat(codigo.substring(37)) / 100;
+
+      return {
+        codigo,
+        valor: valor.toFixed(2),
+        vencimento: vencimento.toLocaleDateString('pt-BR'),
+        pago: false,
+        dataHora: new Date().toLocaleString('pt-BR')
+      };
+    }
+
+    function registrarBoleto(codigoManual=null) {
+      const codigo = codigoManual || document.getElementById("codigoBarras").value.trim();
+      if (!codigo) return alert("Passe ou digite o boleto!");
+
+      const boleto = parseBoleto(codigo);
+      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+      boletos.push(boleto);
+      localStorage.setItem("boletos", JSON.stringify(boletos));
+
+      document.getElementById("codigoBarras").value = "";
+      renderBoletos();
+      checarVencimentos();
+    }
+
+    function togglePago(i) {
+      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+      boletos[i].pago = !boletos[i].pago;
+      localStorage.setItem("boletos", JSON.stringify(boletos));
+      renderBoletos();
+    }
+
+    // Busca, filtros e renderização
+    function renderBoletos() {
+      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+      const lista = document.getElementById("listaBoletos");
+      const filtro = document.getElementById("filtro").value;
+      const busca = document.getElementById("search").value.toLowerCase();
+      lista.innerHTML = "";
+
+      boletos.forEach((b, i) => {
+        let vencido = new Date(b.vencimento.split("/").reverse().join("-")) < new Date();
+        if (busca && !b.codigo.includes(busca) && !b.valor.includes(busca)) return;
+        if (filtro === "pagos" && !b.pago) return;
+        if (filtro === "abertos" && (b.pago || vencido)) return;
+        if (filtro === "vencidos" && (!vencido || b.pago)) return;
+
+        lista.innerHTML += `
+          <div class="boleto ${b.pago ? "pago" : ""}">
+            <p><b>Código:</b> ${b.codigo}</p>
+            <p><b>Valor:</b> R$ ${b.valor}</p>
+            <p><b>Vencimento:</b> ${b.vencimento}</p>
+            <p><b>Status:</b> ${b.pago ? "Pago" : vencido ? "Vencido" : "Em aberto"}</p>
+            <p><b>Registrado em:</b> ${b.dataHora}</p>
+            <button onclick="togglePago(${i})">${b.pago ? "Desmarcar" : "Marcar Pago"}</button>
+          </div>
+        `;
+      });
+      atualizarDashboard();
+    }
+
+    // Dashboard
+    function atualizarDashboard() {
+      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+      let total = boletos.length;
+      let pagos = boletos.filter(b => b.pago).length;
+      let abertos = boletos.filter(b => !b.pago).length;
+      let soma = boletos.reduce((acc,b) => acc + parseFloat(b.valor),0).toFixed(2);
+      document.getElementById("dashboard").innerHTML = `
+        <b>Resumo:</b><br>
+        Total: ${total} boletos<br>
+        Pagos: ${pagos}<br>
+        Em aberto: ${abertos}<br>
+        Soma total: R$ ${soma}
+      `;
+    }
+
+    // Notificação simples de vencimento
+    function checarVencimentos() {
+      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+      let hoje = new Date();
+      boletos.forEach(b => {
+        let venc = new Date(b.vencimento.split("/").reverse().join("-"));
+        if (!b.pago && venc <= hoje) {
+          alert("⚠️ Boleto vencido: " + b.codigo + " (R$ " + b.valor + ")");
+        }
+      });
+    }
+
+    // Exportar CSV
+    function exportarCSV() {
+      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+      let csv = "Código,Valor,Vencimento,Status,Registrado\n";
+      boletos.forEach(b => {
+        let vencido = new Date(b.vencimento.split("/").reverse().join("-")) < new Date();
+        let status = b.pago ? "Pago" : vencido ? "Vencido" : "Em aberto";
+        csv += `${b.codigo},${b.valor},${b.vencimento},${status},${b.dataHora}\n`;
+      });
+      let blob = new Blob([csv], { type: "text/csv" });
+      let a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "boletos.csv";
+      a.click();
+    }
+
+    // Abrir câmera e iniciar scanner
     function abrirCamera() {
       navigator.mediaDevices.getUserMedia({
         video: {
@@ -47,15 +205,45 @@
         }
       })
       .then(stream => {
-        const video = document.getElementById("preview");
+        const video = document.getElementById("interactive");
         video.srcObject = stream;
         console.log("✅ Câmera aberta");
+        startScanner();
       })
       .catch(err => {
         console.error("❌ Erro no getUserMedia:", err);
         alert("Erro ao acessar câmera: " + err.message);
       });
     }
+
+    // Scanner com Quagga
+    function startScanner() {
+      Quagga.init({
+        inputStream: {
+          type: "LiveStream",
+          target: document.querySelector('#interactive'),
+          constraints: { facingMode: "environment" }
+        },
+        decoder: { readers: ["code_128_reader","i2of5_reader"] }
+      }, function(err) {
+        if (err) {
+          console.error("Erro ao iniciar scanner:", err);
+          alert("Erro ao iniciar scanner: " + err.message);
+          return;
+        }
+        Quagga.start();
+        console.log("Scanner iniciado!");
+      });
+
+      Quagga.onDetected(function(data) {
+        registrarBoleto(data.codeResult.code);
+        stopScanner();
+      });
+    }
+
+    function stopScanner() { Quagga.stop(); }
+
+    renderBoletos();
   </script>
 </body>
 </html>
