@@ -4,106 +4,531 @@
   <meta charset="UTF-8">
   <title>Controle de Boletos</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      background: #121212;
-      color: #fff;
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
       padding: 20px;
+      min-height: 100vh;
     }
-    h1 { text-align: center; }
-    .top-bar {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-      flex-wrap: wrap;
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      color: white;
     }
-    input, select, button {
-      padding: 8px;
-      border-radius: 6px;
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .header p {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Input Section */
+    .input-section {
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 16px 20px;
+      border: 2px solid #e1e5e9;
+      border-radius: 16px;
+      font-size: 16px;
+      background: #f8f9fa;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .button-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      padding: 16px 20px;
       border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #495057;
+      border: 2px solid #e9ecef;
+    }
+
+    .btn-secondary:hover {
+      background: #e9ecef;
+      transform: translateY(-1px);
+    }
+
+    .btn-full {
+      grid-column: 1 / -1;
+    }
+
+    /* Filter Pills */
+    .filter-section {
+      margin-bottom: 20px;
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0;
+      margin-bottom: 16px;
+    }
+
+    .filter-pill {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      backdrop-filter: blur(10px);
+    }
+
+    .filter-pill.active {
+      background: white;
+      color: #667eea;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .filter-pill:hover {
+      transform: translateY(-1px);
+    }
+
+    /* Dashboard */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 24px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #718096;
+      font-weight: 500;
+    }
+
+    /* Boleto Cards */
+    .boleto-card {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-left: 4px solid #667eea;
+      transition: all 0.3s ease;
+    }
+
+    .boleto-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    .boleto-card.paid {
+      opacity: 0.7;
+      border-left-color: #48bb78;
+    }
+
+    .boleto-card.overdue {
+      border-left-color: #f56565;
+    }
+
+    .boleto-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .boleto-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 4px;
+    }
+
+    .boleto-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #667eea;
+    }
+
+    .boleto-info {
+      margin-bottom: 20px;
+    }
+
+    .boleto-info-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
       font-size: 14px;
     }
-    input { flex: 1; }
-    button {
+
+    .boleto-info-label {
+      color: #718096;
+      font-weight: 500;
+    }
+
+    .boleto-info-value {
+      color: #2d3748;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-paid {
+      background: #c6f6d5;
+      color: #22543d;
+    }
+
+    .status-pending {
+      background: #fed7d7;
+      color: #742a2a;
+    }
+
+    .status-open {
+      background: #bee3f8;
+      color: #2a4365;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .action-btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      background: #1976d2;
-      color: #fff;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    .boleto {
-      background: #1e1e1e;
-      padding: 10px;
-      border-radius: 6px;
-      margin: 10px 0;
+
+    .action-btn-edit {
+      background: #e6fffa;
+      color: #234e52;
     }
-    .pago { opacity: 0.6; text-decoration: line-through; }
-    #dashboard {
-      background: #1e1e1e;
-      padding: 10px;
-      border-radius: 6px;
-      margin: 15px 0;
+
+    .action-btn-rename {
+      background: #fef5e7;
+      color: #744210;
     }
-    video {
+
+    .action-btn-delete {
+      background: #fed7d7;
+      color: #742a2a;
+    }
+
+    .action-btn-toggle {
+      background: #e6fffa;
+      color: #234e52;
+      grid-column: 1 / -1;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    /* Month Headers */
+    .month-header {
+      background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 16px 24px;
+      margin: 30px 0 20px 0;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .month-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2d3748;
+      margin: 0;
+    }
+
+    /* Scanner */
+    .scanner-container {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .scanner-container video {
       width: 100%;
-      max-width: 700px;
-      height: auto;
-      margin: auto;
-      display: block;
-      border: 2px solid #1976d2;
-      border-radius: 8px;
-      transform: rotate(90deg);
+      height: 300px;
+      object-fit: cover;
+      border-radius: 20px;
     }
-    .scanner-frame {
+
+    .scanner-overlay {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 90%;
-      max-width: 600px;
-      height: 180px;
-      border: 3px dashed #1976d2;
-      border-radius: 10px;
-      box-sizing: border-box;
-      pointer-events: none;
+      width: 80%;
+      height: 60px;
+      border: 3px solid #667eea;
+      border-radius: 12px;
+      background: rgba(102, 126, 234, 0.1);
+      backdrop-filter: blur(5px);
+    }
+
+    .scanner-overlay::before {
+      content: "Posicione o código de barras aqui";
+      position: absolute;
+      top: -35px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      white-space: nowrap;
+    }
+
+    /* Responsive */
+    @media (min-width: 768px) {
+      .container {
+        max-width: 600px;
+        padding: 40px;
+      }
+
+      .dashboard {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .action-buttons {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .button-group {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .container {
+        max-width: 800px;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card, .boleto-card {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    /* Checkbox customizado */
+    .custom-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 16px;
+    }
+
+    .custom-checkbox:hover {
+      background: #e9ecef;
+    }
+
+    .custom-checkbox input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #667eea;
+    }
+
+    .custom-checkbox label {
+      font-weight: 600;
+      color: #495057;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Controle de Boletos</h1>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>💳 Controle de Boletos</h1>
+      <p>Gerencie seus boletos de forma simples e organizada</p>
+    </div>
 
-  <!-- Entrada manual / leitor -->
-  <div class="top-bar">
-    <input type="text" id="codigoBarras" placeholder="Passe o boleto no leitor ou digite">
-    <button onclick="registrarBoleto()">Salvar</button>
-    <button onclick="abrirCamera()">📷 Abrir câmera</button>
-    <button onclick="stopScanner()">⏹ Parar</button>
-  </div>
+    <!-- Input Section -->
+    <div class="card input-section">
+      <div class="input-group">
+        <input type="text" id="codigoBarras" placeholder="Cole ou digite o código de barras">
+      </div>
+      <div class="button-group">
+        <button class="btn btn-primary" onclick="registrarBoleto()">💾 Salvar</button>
+        <button class="btn btn-secondary" onclick="abrirCamera()">📷 Scanner</button>
+        <button class="btn btn-secondary" onclick="stopScanner()">⏹ Parar</button>
+      </div>
+    </div>
 
-  <!-- Filtros -->
-  <div class="top-bar">
-    <input type="text" id="search" placeholder="Buscar código ou valor" oninput="renderBoletos()">
-    <select id="filtro" onchange="renderBoletos()">
-      <option value="todos">Todos</option>
-      <option value="abertos">Em aberto</option>
-      <option value="pagos">Pagos</option>
-      <option value="vencidos">Vencidos</option>
-    </select>
-    <button onclick="exportarCSV()">⬇️ Exportar CSV</button>
-  </div>
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <div class="filter-pills">
+        <button class="filter-pill active" data-filter="todos" onclick="setFilter(this, 'todos')">Todos</button>
+        <button class="filter-pill" data-filter="abertos" onclick="setFilter(this, 'abertos')">Em Aberto</button>
+        <button class="filter-pill" data-filter="pagos" onclick="setFilter(this, 'pagos')">Pagos</button>
+        <button class="filter-pill" data-filter="vencidos" onclick="setFilter(this, 'vencidos')">Vencidos</button>
+      </div>
+      <div class="card">
+        <div class="input-group">
+          <input type="text" id="search" placeholder="🔍 Buscar por código, valor ou nome" oninput="renderBoletos()">
+        </div>
+        <div class="input-group">
+          <select id="filtroMes" onchange="renderBoletos()" style="width: 100%; padding: 16px 20px; border: 2px solid #e1e5e9; border-radius: 16px; font-size: 16px; background: #f8f9fa;">
+            <option value="todos">📅 Todos os meses</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary btn-full" onclick="exportarCSV()">📊 Exportar CSV</button>
+      </div>
+    </div>
 
-  <!-- Dashboard -->
-  <div id="dashboard"></div>
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+      <!-- Dashboard será preenchido via JavaScript -->
+    </div>
 
-  <!-- Lista de boletos -->
-  <div id="listaBoletos"></div>
+    <!-- Lista de Boletos -->
+    <div id="listaBoletos">
+      <!-- Boletos serão renderizados aqui -->
+    </div>
 
-  <!-- Scanner -->
-  <div style="position: relative; width: 100%; max-width: 700px; margin: auto;">
-    <video id="interactive" autoplay playsinline></video>
-    <div class="scanner-frame"></div>
+    <!-- Scanner -->
+    <div class="scanner-container" style="display: none;" id="scannerContainer">
+      <video id="interactive" autoplay playsinline></video>
+      <div class="scanner-overlay"></div>
+    </div>
   </div>
 
   <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
   <script>
+    // Variáveis globais
+    let currentFilter = 'todos';
+
+    // Funções principais
     function parseBoleto(codigo) {
       let fatorVencimento = parseInt(codigo.substring(33, 37));
       let baseDate = new Date(1997, 9, 7);
@@ -115,13 +540,17 @@
         valor: valor.toFixed(2),
         vencimento: vencimento.toLocaleDateString('pt-BR'),
         pago: false,
-        dataHora: new Date().toLocaleString('pt-BR')
+        dataHora: new Date().toLocaleString('pt-BR'),
+        nome: 'Boleto sem nome' // Nome padrão
       };
     }
 
     function registrarBoleto(codigoManual=null) {
       const codigo = codigoManual || document.getElementById("codigoBarras").value.trim();
-      if (!codigo) return alert("Passe ou digite o boleto!");
+      if (!codigo) {
+        alert("⚠️ Passe ou digite o código do boleto!");
+        return;
+      }
 
       const boleto = parseBoleto(codigo);
       let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
@@ -140,82 +569,263 @@
       renderBoletos();
     }
 
-    function renderBoletos() {
+    function editarValorBoleto(i) {
       let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
-      const lista = document.getElementById("listaBoletos");
-      const filtro = document.getElementById("filtro").value;
-      const busca = document.getElementById("search").value.toLowerCase();
-      lista.innerHTML = "";
-
-      boletos.forEach((b, i) => {
-        let vencido = new Date(b.vencimento.split("/").reverse().join("-")) < new Date();
-        if (busca && !b.codigo.includes(busca) && !b.valor.includes(busca)) return;
-        if (filtro === "pagos" && !b.pago) return;
-        if (filtro === "abertos" && (b.pago || vencido)) return;
-        if (filtro === "vencidos" && (!vencido || b.pago)) return;
-
-        lista.innerHTML += `
-          <div class="boleto ${b.pago ? "pago" : ""}">
-            <p><b>Código:</b> ${b.codigo}</p>
-            <p><b>Valor:</b> R$ <input type="number" value="${b.valor}" onchange="editarValor(${i}, this.value)"></p>
-            <p><b>Vencimento:</b> ${b.vencimento}</p>
-            <p><b>Status:</b> ${b.pago ? "Pago" : vencido ? "Vencido" : "Em aberto"}</p>
-            <p><b>Registrado em:</b> ${b.dataHora}</p>
-            <label><input type="checkbox" ${b.pago ? "checked" : ""} onchange="togglePago(${i})"> Pago</label>
-            <button onclick="apagarBoleto(${i})">Apagar</button>
-          </div>
-        `;
-      });
-      atualizarDashboard();
+      let novoValor = prompt("💰 Digite o novo valor:", boletos[i].valor);
+      if (novoValor !== null && !isNaN(parseFloat(novoValor))) {
+        boletos[i].valor = parseFloat(novoValor).toFixed(2);
+        localStorage.setItem("boletos", JSON.stringify(boletos));
+        renderBoletos();
+      }
     }
 
-    function editarValor(i, novoValor) {
+    function renomearBoleto(i) {
       let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
-      boletos[i].valor = parseFloat(novoValor).toFixed(2);
-      localStorage.setItem("boletos", JSON.stringify(boletos));
-      renderBoletos();
+      let novoNome = prompt("📝 Digite um nome para este boleto:", boletos[i].nome || "");
+      if (novoNome !== null && novoNome.trim() !== "") {
+        boletos[i].nome = novoNome.trim();
+        localStorage.setItem("boletos", JSON.stringify(boletos));
+        renderBoletos();
+      }
+    }
+
+    function editarBoleto(i) {
+      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+      let boleto = boletos[i];
+      
+      let novoCodigo = prompt("📊 Código de barras:", boleto.codigo);
+      if (novoCodigo === null) return;
+      
+      let novoValor = prompt("💰 Valor:", boleto.valor);
+      if (novoValor === null) return;
+      
+      let novoVencimento = prompt("📅 Vencimento (dd/mm/aaaa):", boleto.vencimento);
+      if (novoVencimento === null) return;
+      
+      if (!isNaN(parseFloat(novoValor))) {
+        boletos[i].codigo = novoCodigo;
+        boletos[i].valor = parseFloat(novoValor).toFixed(2);
+        boletos[i].vencimento = novoVencimento;
+        localStorage.setItem("boletos", JSON.stringify(boletos));
+        renderBoletos();
+      }
     }
 
     function apagarBoleto(i) {
-      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
-      boletos.splice(i, 1);
-      localStorage.setItem("boletos", JSON.stringify(boletos));
+      if (confirm("🗑️ Tem certeza que deseja apagar este boleto?")) {
+        let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+        boletos.splice(i, 1);
+        localStorage.setItem("boletos", JSON.stringify(boletos));
+        renderBoletos();
+      }
+    }
+
+    // Função para definir filtro
+    function setFilter(element, filter) {
+      // Remove active de todos os pills
+      document.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.classList.remove('active');
+      });
+      
+      // Adiciona active ao pill clicado
+      element.classList.add('active');
+      currentFilter = filter;
       renderBoletos();
     }
 
+    // Busca, filtros e renderização
+    function renderBoletos() {
+      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+      const lista = document.getElementById("listaBoletos");
+      const filtroMes = document.getElementById("filtroMes").value;
+      const busca = document.getElementById("search").value.toLowerCase();
+      lista.innerHTML = "";
+
+      // Atualizar opções do filtro de mês
+      atualizarFiltroMes();
+
+      // Agrupar boletos por mês/ano
+      const boletosPorMes = {};
+      
+      boletos.forEach((b, i) => {
+        let vencido = new Date(b.vencimento.split("/").reverse().join("-")) < new Date();
+        
+        // Aplicar filtros
+        if (busca && !b.codigo.includes(busca) && !b.valor.includes(busca) && !(b.nome && b.nome.toLowerCase().includes(busca))) return;
+        if (currentFilter === "pagos" && !b.pago) return;
+        if (currentFilter === "abertos" && (b.pago || vencido)) return;
+        if (currentFilter === "vencidos" && (!vencido || b.pago)) return;
+
+        // Extrair mês/ano do vencimento
+        const [dia, mes, ano] = b.vencimento.split("/");
+        const chaveData = `${ano}-${mes.padStart(2, '0')}`;
+        const nomeData = `${mes}/${ano}`;
+        
+        // Aplicar filtro de mês
+        if (filtroMes !== "todos" && chaveData !== filtroMes) return;
+        
+        if (!boletosPorMes[chaveData]) {
+          boletosPorMes[chaveData] = {
+            nome: nomeData,
+            boletos: []
+          };
+        }
+        
+        boletosPorMes[chaveData].boletos.push({...b, indice: i, vencido});
+      });
+
+      // Ordenar por data (mais recente primeiro)
+      const chavesOrdenadas = Object.keys(boletosPorMes).sort().reverse();
+      
+      chavesOrdenadas.forEach(chave => {
+        const grupo = boletosPorMes[chave];
+        
+        // Cabeçalho do mês
+        lista.innerHTML += `
+          <div class="month-header">
+            <h3>📅 ${grupo.nome}</h3>
+          </div>
+        `;
+        
+        // Boletos do mês
+        grupo.boletos.forEach(b => {
+          const statusClass = b.pago ? 'paid' : (b.vencido ? 'overdue' : '');
+          const statusBadge = b.pago ? 'status-paid' : (b.vencido ? 'status-pending' : 'status-open');
+          const statusText = b.pago ? 'Pago' : (b.vencido ? 'Vencido' : 'Em Aberto');
+          
+          lista.innerHTML += `
+            <div class="boleto-card ${statusClass}">
+              <div class="boleto-header">
+                <div>
+                  <div class="boleto-name">${b.nome || 'Boleto sem nome'}</div>
+                  <span class="status-badge ${statusBadge}">${statusText}</span>
+                </div>
+                <div class="boleto-value">R$ ${b.valor}</div>
+              </div>
+              
+              <div class="boleto-info">
+                <div class="boleto-info-item">
+                  <span class="boleto-info-label">Vencimento</span>
+                  <span class="boleto-info-value">${b.vencimento}</span>
+                </div>
+                <div class="boleto-info-item">
+                  <span class="boleto-info-label">Código</span>
+                  <span class="boleto-info-value">${b.codigo.substring(0, 20)}...</span>
+                </div>
+                <div class="boleto-info-item">
+                  <span class="boleto-info-label">Registrado</span>
+                  <span class="boleto-info-value">${b.dataHora}</span>
+                </div>
+              </div>
+
+              <div class="custom-checkbox" onclick="togglePago(${b.indice})">
+                <input type="checkbox" ${b.pago ? "checked" : ""} onchange="event.stopPropagation()">
+                <label>Marcar como pago</label>
+              </div>
+
+              <div class="action-buttons">
+                <button class="action-btn action-btn-edit" onclick="editarValorBoleto(${b.indice})">
+                  💰 Valor
+                </button>
+                <button class="action-btn action-btn-rename" onclick="renomearBoleto(${b.indice})">
+                  📝 Renomear
+                </button>
+                <button class="action-btn action-btn-edit" onclick="editarBoleto(${b.indice})">
+                  ✏️ Editar
+                </button>
+                <button class="action-btn action-btn-delete" onclick="apagarBoleto(${b.indice})">
+                  🗑️ Apagar
+                </button>
+              </div>
+            </div>
+          `;
+        });
+      });
+      
+      atualizarDashboard();
+    }
+
+    function atualizarFiltroMes() {
+      let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
+      const filtroMes = document.getElementById("filtroMes");
+      const valorAtual = filtroMes.value;
+      
+      // Coletar todos os meses únicos
+      const mesesUnicos = new Set();
+      boletos.forEach(b => {
+        const [dia, mes, ano] = b.vencimento.split("/");
+        const chaveData = `${ano}-${mes.padStart(2, '0')}`;
+        const nomeData = `${mes}/${ano}`;
+        mesesUnicos.add(JSON.stringify({chave: chaveData, nome: nomeData}));
+      });
+      
+      // Reconstruir as opções
+      filtroMes.innerHTML = '<option value="todos">📅 Todos os meses</option>';
+      
+      const mesesArray = Array.from(mesesUnicos).map(m => JSON.parse(m));
+      mesesArray.sort((a, b) => b.chave.localeCompare(a.chave)); // Mais recente primeiro
+      
+      mesesArray.forEach(mes => {
+        const selected = valorAtual === mes.chave ? 'selected' : '';
+        filtroMes.innerHTML += `<option value="${mes.chave}" ${selected}>${mes.nome}</option>`;
+      });
+    }
+
+    // Dashboard
     function atualizarDashboard() {
       let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
       let total = boletos.length;
       let pagos = boletos.filter(b => b.pago).length;
-      let abertos = boletos.filter(b => !b.pago).length;
+      let abertos = boletos.filter(b => !b.pago && new Date(b.vencimento.split("/").reverse().join("-")) >= new Date()).length;
+      let vencidos = boletos.filter(b => !b.pago && new Date(b.vencimento.split("/").reverse().join("-")) < new Date()).length;
       let soma = boletos.reduce((acc,b) => acc + parseFloat(b.valor),0).toFixed(2);
+      
       document.getElementById("dashboard").innerHTML = `
-        <b>Resumo:</b><br>
-        Total: ${total} boletos<br>
-        Pagos: ${pagos}<br>
-        Em aberto: ${abertos}<br>
-        Soma total: R$ ${soma}
+        <div class="stat-card">
+          <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">📊</div>
+          <div class="stat-value">${total}</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #c6f6d5; color: #22543d;">✅</div>
+          <div class="stat-value">${pagos}</div>
+          <div class="stat-label">Pagos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #bee3f8; color: #2a4365;">⏳</div>
+          <div class="stat-value">${abertos}</div>
+          <div class="stat-label">Em Aberto</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #fed7d7; color: #742a2a;">⚠️</div>
+          <div class="stat-value">${vencidos}</div>
+          <div class="stat-label">Vencidos</div>
+        </div>
       `;
     }
 
+    // Notificação simples de vencimento
     function checarVencimentos() {
       let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
       let hoje = new Date();
-      boletos.forEach(b => {
+      let vencidos = boletos.filter(b => {
         let venc = new Date(b.vencimento.split("/").reverse().join("-"));
-        if (!b.pago && venc <= hoje) {
-          alert("⚠️ Boleto vencido: " + b.codigo + " (R$ " + b.valor + ")");
-        }
+        return !b.pago && venc <= hoje;
       });
+      
+      if (vencidos.length > 0) {
+        alert(`⚠️ Você tem ${vencidos.length} boleto(s) vencido(s)!`);
+      }
     }
 
+    // Exportar CSV
     function exportarCSV() {
       let boletos = JSON.parse(localStorage.getItem("boletos")) || [];
-      let csv = "Código,Valor,Vencimento,Status,Registrado\n";
+      let csv = "Nome,Código,Valor,Vencimento,Status,Registrado\n";
       boletos.forEach(b => {
         let vencido = new Date(b.vencimento.split("/").reverse().join("-")) < new Date();
         let status = b.pago ? "Pago" : vencido ? "Vencido" : "Em aberto";
-        csv += `${b.codigo},${b.valor},${b.vencimento},${status},${b.dataHora}\n`;
+        csv += `"${b.nome || 'Sem nome'}","${b.codigo}","${b.valor}","${b.vencimento}","${status}","${b.dataHora}"\n`;
       });
       let blob = new Blob([csv], { type: "text/csv" });
       let a = document.createElement("a");
@@ -224,34 +834,70 @@
       a.click();
     }
 
+    // Abrir câmera e iniciar scanner
     function abrirCamera() {
+      const scannerContainer = document.getElementById("scannerContainer");
+      scannerContainer.style.display = "block";
+      
+      // Tentar forçar orientação horizontal (funciona em alguns dispositivos)
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {
+          console.log('Não foi possível forçar orientação horizontal');
+        });
+      }
+      
       navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: "environment" },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 },
+          aspectRatio: { ideal: 16/9 }
         }
       })
       .then(stream => {
         const video = document.getElementById("interactive");
         video.srcObject = stream;
         console.log("✅ Câmera aberta");
-        startScanner();
+        
+        // Aguardar o vídeo carregar antes de iniciar o scanner
+        video.addEventListener('loadedmetadata', () => {
+          startScanner();
+        });
       })
       .catch(err => {
         console.error("❌ Erro no getUserMedia:", err);
         alert("Erro ao acessar câmera: " + err.message);
+        scannerContainer.style.display = "none";
       });
     }
 
+    // Scanner com Quagga
     function startScanner() {
       Quagga.init({
         inputStream: {
           type: "LiveStream",
           target: document.querySelector('#interactive'),
-          constraints: { facingMode: "environment" }
+          constraints: { 
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
         },
-        decoder: { readers: ["code_128_reader","i2of5_reader"] }
+        locator: {
+          patchSize: "medium",
+          halfSample: true
+        },
+        numOfWorkers: 2,
+        frequency: 10,
+        decoder: { 
+          readers: [
+            "code_128_reader",
+            "i2of5_reader",
+            "ean_reader",
+            "ean_8_reader"
+          ]
+        },
+        locate: true
       }, function(err) {
         if (err) {
           console.error("Erro ao iniciar scanner:", err);
@@ -263,14 +909,36 @@
       });
 
       Quagga.onDetected(function(data) {
+        console.log("Código detectado:", data.codeResult.code);
         registrarBoleto(data.codeResult.code);
         stopScanner();
       });
     }
 
-    function stopScanner() { Quagga.stop(); }
+    function stopScanner() { 
+      Quagga.stop(); 
+      
+      // Parar o stream da câmera
+      const video = document.getElementById("interactive");
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+      }
+      
+      // Esconder o scanner
+      document.getElementById("scannerContainer").style.display = "none";
+      
+      // Liberar orientação (se foi bloqueada)
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+    }
 
-    renderBoletos();
+    // Inicializar app
+    document.addEventListener('DOMContentLoaded', function() {
+      renderBoletos();
+      checarVencimentos();
+    });
   </script>
 </body>
 </html>
